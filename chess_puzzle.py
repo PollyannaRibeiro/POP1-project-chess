@@ -41,6 +41,16 @@ def piece_at(pos_X : int, pos_Y : int, B: Board) -> Piece:
         if piece.pos_x == pos_X and piece.pos_y == pos_Y:
             return piece
 
+def is_new_bigger(num, new_num):
+    if new_num > num:
+        return True
+    elif new_num <num:
+        return False
+
+def is_equal(num, new_num):
+    if new_num == num:
+        return True
+    return False
 
 class Rook(Piece):
     def __init__(self, pos_X : int, pos_Y : int, side_ : bool):
