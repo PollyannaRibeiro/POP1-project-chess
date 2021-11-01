@@ -55,6 +55,7 @@ def is_equal(num, new_num):
 class Rook(Piece):
     def __init__(self, pos_X : int, pos_Y : int, side_ : bool):
         '''sets initial values by calling the constructor of Piece'''
+        super().__init__(pos_X, pos_Y, side_)
 	
     def can_reach(self, pos_X : int, pos_Y : int, B: Board) -> bool:
         '''
@@ -62,6 +63,60 @@ class Rook(Piece):
         on board B according to rule [Rule2] and [Rule4](see section Intro)
         Hint: use is_piece_at
         '''
+        current_x = self.pos_x
+        current_y = self.pos_y
+
+        # find out if there other pieces on the way
+
+        if is_equal(current_x, pos_X) :
+            while current_y != pos_Y:
+                if is_new_bigger(current_y, pos_Y):
+                    if is_piece_at(pos_X, pos_Y, B):
+                        return False
+                    else:
+                        pos_Y -= 1
+                else:
+                    if is_piece_at(pos_X, pos_Y, B):
+                        return False
+                    else:
+                        pos_Y += 1
+
+        elif is_equal(current_y, pos_Y):
+            while current_x != pos_X:
+                if is_new_bigger(current_x, pos_X):
+                    if is_piece_at(pos_X, pos_Y, B):
+                        print("worked!")
+                        return False
+                    else:
+                        pos_X -= 1
+                else:
+                    if is_piece_at(pos_X, pos_Y, B):
+                        return False
+                    else:
+                        pos_X += 1
+
+        board_size = B[0]
+        new_x = pos_X
+        new_y = pos_Y
+        current_side = self.side
+        self.piece_to_capture: Piece
+
+        #find out if there is any piece there and the movement is possible
+
+        if is_equal(current_x, pos_X) and pos_Y > 0 and pos_Y <= board_size or\
+            is_equal(current_y, pos_Y)  and pos_X > 0 and pos_X <= board_size:
+
+            if is_piece_at(new_x, new_y, B):
+                piece_on_there = piece_at(new_x, new_y, B)
+                if current_side == piece_on_there.side:
+                    return False
+                else:
+                    self.piece_to_capture = piece_on_there
+                    return True
+            else:
+                return True
+        return False
+
     def can_move_to(self, pos_X : int, pos_Y : int, B: Board) -> bool:
         '''
         checks if this rook can move to coordinates pos_X, pos_Y
