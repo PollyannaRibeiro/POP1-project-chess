@@ -1,7 +1,11 @@
 def location2index(loc: str) -> tuple[int, int]:
     '''converts chess location to corresponding x and y coordinates'''
-    
-	
+    list = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r",
+            "s", "t", "u", "v", "w", "x", "y", "z"]
+    x = list.index(loc[0])+1
+    y = int(loc[1:])
+    return tuple([x, y])
+
 def index2location(x: int, y: int) -> str:
     '''converts  pair of coordinates to corresponding location'''
 
