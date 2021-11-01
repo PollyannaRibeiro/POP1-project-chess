@@ -46,12 +46,12 @@ def test_can_move_to1():
 def test_is_check1():
     wr2b = Rook(2,4,True)
     B2 = (5, [wb1, wr1, wb2, bk, br1, br2a, br3, wr2b, wk])
-    assert is_check(B2) == True
+    assert is_check(True, B2) == True
 
 def test_is_checkmate1():
-    br2b = Rook(2,5,False)
+    br2b = Rook(4,5,False)
     B2 = (5, [wb1, wr1, wb2, bk, br1, br2b, br3, wr2, wk])
-    assert is_checkmate(B2) == True
+    assert is_checkmate(True, B2) == True
 
 def test_read_board1():
     B = read_board("board_examp.txt")
@@ -60,17 +60,17 @@ def test_read_board1():
     for piece in B[1]:  #we check if every piece in B is also present in B1; if not, the test will fail
         found = False
         for piece1 in B1[1]:
-            if piece.pos_x == piece1.pos_x and piece.pos_y == piece1.pos_y and type(piece) == type(piece1):
+            if piece.pos_x == piece1.pos_x and piece.pos_y == piece1.pos_y and piece.side == piece1.side and type(piece) == type(piece1):
                 found = True
         assert found
 
     for piece1 in B1[1]: #we check if every piece in B1 is also present in B; if not, the test will fail
         found = False
         for piece in B[1]:
-            if piece.pos_x == piece1.pos_x and piece.pos_y == piece1.pos_y and type(piece) == type(piece1):
+            if piece.pos_x == piece1.pos_x and piece.pos_y == piece1.pos_y and piece.side == piece1.side and type(piece) == type(piece1):
                 found = True
         assert found
 
 def test_conf2unicode1():
-    assert conf2unicode1(B1) == "♖ ♔  \n ♜  ♜\n ♚ ♜ \n♖   ♗\n♗    "
+    assert conf2unicode(B1) == "♖ ♔  \n ♜  ♜\n ♚ ♜ \n♖   ♗\n♗    "
     
