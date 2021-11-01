@@ -8,6 +8,9 @@ def location2index(loc: str) -> tuple[int, int]:
 
 def index2location(x: int, y: int) -> str:
     '''converts  pair of coordinates to corresponding location'''
+    list = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r",
+            "s", "t", "u", "v", "w", "x", "y", "z"]
+    return f"{list[x-1]}{y}"
 
 class Piece:
     pos_x : int	
