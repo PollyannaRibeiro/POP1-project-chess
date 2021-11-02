@@ -89,11 +89,49 @@ class Rook(Piece):
         - thirdly, construct new board resulting from move
         - finally, to check [Rule5], use is_check on new board
         '''
+
+        if self.can_reach(pos_X, pos_Y, B):
+            #  check if it is not overleaping any other piece
+            if is_equal(self.pos_x, pos_X):
+                start = min(self.pos_y, pos_Y)+1
+                end = max(self.pos_y, pos_Y)
+
+                while start != end:
+                    if is_piece_at(pos_X, start, B):
+                        return False
+                    start +=1
+                return True
+            else:
+                start = min(self.pos_x, pos_X) + 1
+                end = max(self.pos_x, pos_X)
+
+                while start != end:
+                    if is_piece_at(start, pos_Y, B):
+                        return False
+                    start += 1
+                return True
+
+        return False
+
     def move_to(self, pos_X : int, pos_Y : int, B: Board) -> Board:
         '''
         returns new board resulting from move of this rook to coordinates pos_X, pos_Y on board B 
         assumes this move is valid according to chess rules
         '''
+        new_board: tuple[int, list[Piece]]
+
+        if self.can_move_to(pos_X, pos_Y, B):
+            board = B
+            if piece_at(pos_X, pos_Y, B):
+                piece_to_remove = piece_at(pos_X, pos_Y, B)
+                board[1].remove(piece_to_remove)
+
+            self.pos_x = pos_X
+            self.pos_y = pos_Y
+            new_board = board
+
+            print(f"board - rook --- {new_board}")
+            return new_board
 
 class Bishop(Piece):
     def __init__(self, pos_X : int, pos_Y : int, side_ : bool):
