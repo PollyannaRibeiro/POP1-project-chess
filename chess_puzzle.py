@@ -48,9 +48,7 @@ def is_new_bigger(num, new_num):
         return False
 
 def is_equal(num, new_num):
-    if new_num == num:
-        return True
-    return False
+    return new_num == num
 
 class Rook(Piece):
     def __init__(self, pos_X : int, pos_Y : int, side_ : bool):
@@ -65,63 +63,25 @@ class Rook(Piece):
         '''
         current_x = self.pos_x
         current_y = self.pos_y
-
-        # find out if there other pieces on the way
-
-        if is_equal(current_x, pos_X) :
-            while current_y != pos_Y:
-                if is_new_bigger(current_y, pos_Y):
-                    if is_piece_at(pos_X, pos_Y, B):
-                        return False
-                    else:
-                        pos_Y -= 1
-                else:
-                    if is_piece_at(pos_X, pos_Y, B):
-                        return False
-                    else:
-                        pos_Y += 1
-
-        elif is_equal(current_y, pos_Y):
-            while current_x != pos_X:
-                if is_new_bigger(current_x, pos_X):
-                    if is_piece_at(pos_X, pos_Y, B):
-                        print("worked!")
-                        return False
-                    else:
-                        pos_X -= 1
-                else:
-                    if is_piece_at(pos_X, pos_Y, B):
-                        return False
-                    else:
-                        pos_X += 1
-
-        board_size = B[0]
-        new_x = pos_X
-        new_y = pos_Y
         current_side = self.side
-        self.piece_to_capture: Piece
 
-        #find out if there is any piece there and the movement is possible
+        # check if there is a piece of the same side on the new position
+        if is_piece_at(pos_X, pos_Y, B):
+            piece_on_there = piece_at(pos_X, pos_Y, B)
+            if current_side == piece_on_there.side:
+                return False
 
-        if is_equal(current_x, pos_X) and pos_Y > 0 and pos_Y <= board_size or\
-            is_equal(current_y, pos_Y)  and pos_X > 0 and pos_X <= board_size:
+        # check if the movement is possible
+        if is_equal(current_x, pos_X) and not is_equal(current_y, pos_Y) or not is_equal(current_x, pos_X) and is_equal(current_y, pos_Y):
+            return True
+        else:
+            return False
 
-            if is_piece_at(new_x, new_y, B):
-                piece_on_there = piece_at(new_x, new_y, B)
-                if current_side == piece_on_there.side:
-                    return False
-                else:
-                    self.piece_to_capture = piece_on_there
-                    return True
-            else:
-                return True
-        return False
 
     def can_move_to(self, pos_X : int, pos_Y : int, B: Board) -> bool:
         '''
         checks if this rook can move to coordinates pos_X, pos_Y
         on board B according to all chess rules
-        
         Hints:
         - firstly, check [Rule2] and [Rule4] using can_reach
         - secondly, check if result of move is capture using is_piece_at
