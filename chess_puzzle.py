@@ -55,11 +55,11 @@ def is_equal(num, new_num):
     return new_num == num
 
 class Rook(Piece):
-    def __init__(self, pos_X : int, pos_Y : int, side_ : bool):
+    def __init__(self, pos_X: int, pos_Y: int, side_: bool):
         '''sets initial values by calling the constructor of Piece'''
         super().__init__(pos_X, pos_Y, side_)
-	
-    def can_reach(self, pos_X : int, pos_Y : int, B: Board) -> bool:
+
+    def can_reach(self, pos_X: int, pos_Y: int, B: Board) -> bool:
         '''
         checks if this rook can move to coordinates pos_X, pos_Y
         on board B according to rule [Rule2] and [Rule4](see section Intro)
@@ -76,7 +76,8 @@ class Rook(Piece):
                 return False
 
         # check if the movement is possible
-        if is_equal(current_x, pos_X) and not is_equal(current_y, pos_Y) or not is_equal(current_x, pos_X) and is_equal(current_y, pos_Y):
+        if is_equal(current_x, pos_X) and not is_equal(current_y, pos_Y) or not is_equal(current_x, pos_X) and is_equal(
+                current_y, pos_Y):
             return True
         else:
             return False
