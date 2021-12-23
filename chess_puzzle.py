@@ -153,7 +153,7 @@ class Rook(Piece):
         else:
             return False
 
-    def move_to(self, pos_X : int, pos_Y : int, B: Board) -> Board:
+    def move_to(self, pos_X: int, pos_Y: int, B: Board) -> Board:
         '''
         returns new board resulting from move of this rook to coordinates pos_X, pos_Y on board B 
         assumes this move is valid according to chess rules
@@ -161,14 +161,9 @@ class Rook(Piece):
         new_board: tuple[int, list[Piece]]
 
         if self.can_move_to(pos_X, pos_Y, B):
-            board = B
-            if piece_at(pos_X, pos_Y, B):
-                piece_to_remove = piece_at(pos_X, pos_Y, B)
-                board[1].remove(piece_to_remove)
-
             self.pos_x = pos_X
             self.pos_y = pos_Y
-            new_board = board
+            new_board = B
 
             print(f"board - rook --- {new_board}")
             return new_board
