@@ -82,8 +82,7 @@ class Rook(Piece):
         else:
             return False
 
-
-    def can_move_to(self, pos_X : int, pos_Y : int, B: Board) -> bool:
+    def can_move_to(self, pos_X: int, pos_Y: int, B: Board) -> bool:
         '''
         checks if this rook can move to coordinates pos_X, pos_Y
         on board B according to all chess rules
@@ -97,27 +96,62 @@ class Rook(Piece):
         '''
 
         if self.can_reach(pos_X, pos_Y, B):
-            #  check if it is not overleaping any other piece
-            if is_equal(self.pos_x, pos_X):
-                start = min(self.pos_y, pos_Y)+1
-                end = max(self.pos_y, pos_Y)
+
+            #  check if it is not overlapping any other piece
+            piece_to_be_removed = None
+
+            if is_equal(self.pos_x, pos_X):  # checking if the rook keep in the same row and move columns
+                start: int = self.pos_y
+                end: int = pos_Y
+                counter: int = None
+
+                #finding out if it's crescent or decrescent
+                if start < end:
+                    counter = 1
+                else:
+                    counter = -1
+
+                start += counter
 
                 while start != end:
+
                     if is_piece_at(pos_X, start, B):
                         return False
-                    start +=1
-                return True
-            else:
-                start = min(self.pos_x, pos_X) + 1
-                end = max(self.pos_x, pos_X)
+                    start += counter
+
+                if start == end and is_piece_at(pos_X, end, B) is True:
+                    piece_to_be_removed = piece_at(pos_X, end, B)
+
+            else:  # checking if the rook keep in the same column and move rows
+                start: int = self.pos_x
+                end: int = pos_X
+                counter: int = None
+
+                # finding out if it's crescent or decrescent
+                if start < end:
+                    counter = 1
+                else:
+                    counter = -1
+
+                start += counter
 
                 while start != end:
+
                     if is_piece_at(start, pos_Y, B):
                         return False
                     start += 1
-                return True
 
-        return False
+                if start == end and is_piece_at(end, pos_Y, B) == True:
+                    piece_to_be_removed = piece_at(end, pos_Y, B)
+
+            B[1].remove(piece_to_be_removed) # removing the competitor piece
+            #placing the new position of the piece
+            piece_to_be_altered = piece_at(self.pos_x, self.pos_y, B)
+            piece_to_be_altered.pos_x = pos_X;
+            piece_to_be_altered.pos_y = pos_Y;
+            return True;
+        else:
+            return False
 
     def move_to(self, pos_X : int, pos_Y : int, B: Board) -> Board:
         '''
