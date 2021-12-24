@@ -138,7 +138,46 @@ def read_board(filename: str) -> Board:
         print("Oops! It's not possible to read this file")
 
 
+def save_board(filename: str, B: Board) -> None:
     '''saves board configuration into file in current directory in plain format'''
+
+    try:
+
+        size = B[0]
+        pieces_list = B[1]
+        white_pieces_str = ""
+        black_pieces_str = ""
+
+        for i in range(0, len(pieces_list)):
+            piece = pieces_list[i]
+            piece_str = index2location(piece.pos_x, piece.pos_y)
+            piece_type = None
+
+            if type(piece) == Rook:
+                piece_type = "R"
+            elif type(piece) == Bishop:
+                piece_type = "B"
+            elif type(piece) == King:
+                piece_type = "K"
+
+            if piece.side is True:
+                white_pieces_str += piece_type + piece_str + ", "
+            else:
+                black_pieces_str += piece_type + piece_str + ", "
+
+        white_pieces_str = white_pieces_str[:-2]        # removing the last 2 char
+        black_pieces_str = black_pieces_str[:-2]        # removing the last 2 char
+
+
+        f = open(filename, "w")
+
+        f.write(str(size) + "\n")
+        f.write(white_pieces_str + "\n")
+        f.write(black_pieces_str + "\n")
+        f.close()
+
+    except IOError:
+        print("Error while writing")
 
 
 def find_black_move(B: Board) -> tuple[Piece, int, int]:
