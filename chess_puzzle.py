@@ -57,6 +57,34 @@ def is_checkmate(side: bool, B: Board) -> bool:
     - use can_reach 
     '''
 
+    board = B[1]
+    is_check_possible: bool = is_check(side, B)
+
+    if is_check_possible:
+
+        for piece in board:
+            if type(piece) is King and piece.side == side:
+                king = King(piece.pos_x, piece.pos_y, piece.side)
+
+                all_King_moves_options = [[king.pos_x, king.pos_y + 1], [king.pos_x, king.pos_y - 1], [king.pos_x + 1, king.pos_y],
+                                         [king.pos_x - 1, king.pos_y], [king.pos_x + 1, king.pos_y + 1], [king.pos_x - 1, king.pos_y - 1],
+                                         [king.pos_x + 1, king.pos_y - 1], [king.pos_x - 1, king.pos_y + 1]]
+
+                for index in range(0, len(all_King_moves_options)-1):
+                    king_moves = all_King_moves_options[index][0], all_King_moves_options[index][1]
+                    can_walk = king.can_reach(king_moves[0], king_moves[1], B)
+                    if can_walk:
+                        new_board = king.move_to(king_moves[0], king_moves[1], B)
+                        if(is_check(king.side, new_board)):
+                            continue
+                        else:
+                            print("is not checkmate")
+                            return False
+                return True
+    else:
+        return False
+
+
 def read_board(filename: str) -> Board:
     '''
     reads board configuration from file in current directory in plain format
