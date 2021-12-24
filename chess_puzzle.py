@@ -21,6 +21,33 @@ def is_check(side: bool, B: Board) -> bool:
     Hint: use can_reach
     '''
 
+    is_reachable = False
+
+    board = B[1]
+    for piece in board:
+        if type(piece) is King and piece.side == side:
+            for piece2 in board:
+                if piece2.side != side:
+                    if type(piece2) is Rook:
+                        rook = Rook(piece2.pos_x, piece2.pos_y, piece2.side)
+                        if(rook.can_reach(piece.pos_x, piece.pos_y, B)):
+                            is_reachable = True
+
+                    elif type(piece2) is Bishop:
+                        bishop = Bishop(piece2.pos_x, piece2.pos_y, piece2.side)
+                        if (bishop.can_reach(piece.pos_x, piece.pos_y, B)):
+                            is_reachable = True
+
+                    elif type(piece2) is King:
+                        king = King(piece2.pos_x, piece2.pos_y, piece2.side)
+                        if (king.can_reach(piece.pos_x, piece.pos_y, B)):
+                            is_reachable = True
+
+                    if is_reachable:
+                        return True;
+    return False
+
+
 def is_checkmate(side: bool, B: Board) -> bool:
     '''
     checks if configuration of B is checkmate for side
