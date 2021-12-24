@@ -91,7 +91,53 @@ def read_board(filename: str) -> Board:
     raises IOError exception if file is not valid (see section Plain board configurations)
     '''
 
-def save_board(filename: str) -> None:
+    try:
+        f = open(filename, "r")
+        line1 = int(f.readline())   #size
+
+        line2 = f.readline()       #white
+
+        white_pieces_list = line2.replace("\n", "").split(", ")
+        line3 = f.readline()       #black
+
+        black_pieces_list = line3.replace("\n", "").split(", ")
+        pieces_list = list()
+        side_list = [white_pieces_list, black_pieces_list]
+        print(side_list)
+
+        # variables
+        piece_obj = None
+        side = False
+
+        for i in range(0, len(side_list)):
+            for j in range(0, len(side_list[i])):
+                piece = side_list[i][j]
+                positions: tuple[int, int] = location2index(piece[1:])
+                pos_x: int = positions[0]
+                pos_y: int = positions[1]
+
+                if i == 0:
+                    side = True
+
+                if piece[0] == "B":
+                    piece_obj = Bishop(pos_x, pos_y, side)
+                elif piece[0] == "R":
+                    piece_obj = Rook(pos_x, pos_y, side)
+                elif piece[0] == "K":
+                    piece_obj = King(pos_x, pos_y, side)
+                else:
+                    print("IO error")
+
+                pieces_list.append(piece_obj)
+
+        board = (line1, pieces_list)
+        print(board)
+        print(pieces_list)
+
+    except IOError:
+        print("Oops! It's not possible to read this file")
+
+
     '''saves board configuration into file in current directory in plain format'''
 
 
