@@ -1,4 +1,3 @@
-from piece import Piece
 from helpers import *
 from board import Board
 
@@ -91,10 +90,11 @@ class Rook(Piece):
                         return False
                     start += 1
 
-                if start == end and is_piece_at(end, pos_Y, B) == True:
+                if start == end and is_piece_at(end, pos_Y, B) is True:
                     piece_to_be_removed = piece_at(end, pos_Y, B)
 
-            B[1].remove(piece_to_be_removed) # removing the competitor piece
+            if piece_to_be_removed is not None:
+                B[1].remove(piece_to_be_removed) # removing the competitor piece
             #placing the new position of the piece
             piece_to_be_altered = piece_at(self.pos_x, self.pos_y, B)
             piece_to_be_altered.pos_x = pos_X;
