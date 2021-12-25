@@ -1,4 +1,7 @@
 from piece import Piece
+# from rook import Rook
+# from bishop import Bishop
+# from king import King
 from board import Board
 
 def location2index(loc: str) -> tuple[int, int]:
@@ -6,15 +9,12 @@ def location2index(loc: str) -> tuple[int, int]:
 
     unicode_char = ord(loc[0].lower()) - ord("a") + 1
     y = int(loc[1:])
-    print(unicode_char)
     return tuple([unicode_char, y])
 
 
 def index2location(x: int, y: int) -> str:
     '''converts  pair of coordinates to corresponding location'''
     unicode = chr(x + ord("a") - 1);
-    print(unicode)
-
     return f"{unicode}{y}"
 
 def is_piece_at(pos_X: int, pos_Y: int, B: Board) -> bool:
@@ -38,3 +38,9 @@ def piece_at(pos_X: int, pos_Y: int, B: Board) -> Piece:
 
 def is_equal(num, new_num):
     return new_num == num
+
+
+
+
+
+

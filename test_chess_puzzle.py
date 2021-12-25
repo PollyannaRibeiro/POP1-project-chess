@@ -1,6 +1,6 @@
 import pytest
-from chess_puzzle import *
 
+from chess_puzzle import *
 
 def test_locatio2index1():
     assert location2index("e2") == (5,2)
@@ -34,7 +34,12 @@ def test_piece_at1():
     assert piece_at(4,3, B1) == br1
 
 def test_can_reach1():
-    assert wr2.can_reach(4,5, B1) == False
+    assert wr2.can_reach(4, 5, B1) == False
+    assert bk.can_reach(1, 2, B1) == True
+    assert br1.can_reach(2, 3, B1) == False
+    assert wb2.can_reach(4, 3, B1) == True
+    assert br3.can_reach(4, 3, B1) == False
+
 
 br2a = Rook(1,5,False)
 wr2a = Rook(2,5,True)
@@ -73,4 +78,7 @@ def test_read_board1():
 
 def test_conf2unicode1():
     assert conf2unicode(B1) == "♖ ♔  \n ♜  ♜\n ♚ ♜ \n♖   ♗\n♗    "
-    
+
+def test_from_file():
+    board = read_board("board_examp.txt")
+    assert conf2unicode(board) == "♖ ♔  \n ♜  ♜\n ♚ ♜ \n♖   ♗\n♗    "
