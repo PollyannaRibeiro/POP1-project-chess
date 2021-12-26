@@ -1,5 +1,6 @@
 import random
 
+from typing import Optional
 from piece import Piece
 from random import *
 from helpers import *
@@ -17,70 +18,26 @@ class Rook(Piece):
         on board B according to rule [Rule2] and [Rule4](see section Intro)
         Hint: use is_piece_at
         '''
-        current_x = self.pos_x
-        current_y = self.pos_y
-        current_side = self.side
-
-        # check if there is a piece of the same side on the new position
-        if is_piece_at(pos_X, pos_Y, B):
-            piece_on_there = piece_at(pos_X, pos_Y, B)
-            if current_side == piece_on_there.side:
-                return False
-
-
-        # ????????????????????????????????????
-
-        #  check if it is not overlapping any other piece
-        piece_to_be_removed = None
-
-        if is_equal(self.pos_x, pos_X):  # checking if the rook keep in the same row and move columns
-            start: int = self.pos_y
-            end: int = pos_Y
-            counter: int = None
-
-            # finding out if it's crescent or decrescent
-            if start < end:
-                counter = 1
+        if self.pos_x == pos_X or self.pos_y == pos_Y:
+            squares_to_check = list()
+            if self.pos_x == pos_X:
+                listY = range_list(pos_Y, self.pos_y)
+                for y in listY:
+                    squares_to_check.append((self.pos_x, y))
             else:
-                counter = -1
+                listX = range_list(pos_X, self.pos_x)
+                for x in listX:
+                    squares_to_check.append((x, self.pos_y))
 
-            start += counter
-
-            while start != end:
-
-                if is_piece_at(pos_X, start, B):
-                    return False
-                start += counter
-
-            if start == end and is_piece_at(pos_X, end, B) is True:
-                piece_to_be_removed = piece_at(pos_X, end, B)
-
-        else:  # checking if the rook keep in the same column and move rows
-            start: int = self.pos_x
-            end: int = pos_X
-            counter: int = None
-
-            # finding out if it's crescent or decrescent
-            if start < end:
-                counter = 1
-            else:
-                counter = -1
-
-            start += counter
-
-            while start != end:
-
-                if is_piece_at(start, pos_Y, B):
-                    return False
-                start += 1
-
-            if start == end and is_piece_at(end, pos_Y, B) is True:
-                piece_to_be_removed = piece_at(end, pos_Y, B)
-
-
-        # check if the movement is possible
-        if is_equal(current_x, pos_X) and not is_equal(current_y, pos_Y) or not is_equal(current_x, pos_X) and is_equal(
-                current_y, pos_Y):
+            for pos in squares_to_check:
+                if pos[0] == pos_X and pos[1] == pos_Y:
+                    if is_piece_at(pos[0], pos[1], B):
+                        piece = piece_at(pos[0], pos[1], B)
+                        if piece.side == self.side:
+                            return False
+                else:
+                    if is_piece_at(pos[0], pos[1], B):
+                        return False
             return True
         else:
             return False
@@ -99,68 +56,20 @@ class Rook(Piece):
         - finally, to check [Rule5], use is_check on new board
         '''
 
-
         if self.can_reach(pos_X, pos_Y, B):
 
-            #  check if it is not overlapping any other piece
-            piece_to_be_removed = None
+            new_board = Helper.copy_board(B)
+            if is_piece_at(pos_X, pos_Y, new_board):
+                new_board[1].remove(piece_at(pos_X, pos_Y, new_board)) # removing the competitor piece
 
-            if is_equal(self.pos_x, pos_X):  # checking if the rook keep in the same row and move columns
-                start: int = self.pos_y
-                end: int = pos_Y
-                counter: int = None
-
-
-                #finding out if it's crescent or decrescent
-                if start < end:
-                    counter = 1
-                else:
-                    counter = -1
-
-                start += counter
-
-                while start != end:
-
-                    if is_piece_at(pos_X, start, B):
-                        return False
-                    start += counter
-
-                if start == end and is_piece_at(pos_X, end, B) is True:
-                    piece_to_be_removed = piece_at(pos_X, end, B)
-
-            else:  # checking if the rook keep in the same column and move rows
-                start: int = self.pos_x
-                end: int = pos_X
-                counter: int = None
-
-                # finding out if it's crescent or decrescent
-                if start < end:
-                    counter = 1
-                else:
-                    counter = -1
-
-                start += counter
-
-                while start != end:
-
-                    if is_piece_at(start, pos_Y, B):
-                        return False
-                    start += 1
-
-                if start == end and is_piece_at(end, pos_Y, B) is True:
-                    piece_to_be_removed = piece_at(end, pos_Y, B)
-
-            if piece_to_be_removed is not None:
-                B[1].remove(piece_to_be_removed) # removing the competitor piece
             #placing the new position of the piece
-            piece_to_be_altered = piece_at(self.pos_x, self.pos_y, B)
-            piece_to_be_altered.pos_x = pos_X;
-            piece_to_be_altered.pos_y = pos_Y;
+            piece_to_be_altered = piece_at(self.pos_x, self.pos_y, new_board)
+            piece_to_be_altered.pos_x = pos_X
+            piece_to_be_altered.pos_y = pos_Y
 
-            if is_check(piece_to_be_altered.side, B):
+            if is_check(piece_to_be_altered.side, new_board):
                 return False
-
-            return True;
+            return True
         else:
             return False
 
@@ -169,16 +78,18 @@ class Rook(Piece):
         returns new board resulting from move of this rook to coordinates pos_X, pos_Y on board B
         assumes this move is valid according to chess rules
         '''
-        new_board: tuple[int, list[Piece]]
 
         if self.can_move_to(pos_X, pos_Y, B):
-            self.pos_x = pos_X
-            self.pos_y = pos_Y
-            new_board = B
+            new_board = Helper.copy_board(B)
+            if is_piece_at(pos_X, pos_Y, new_board):
+                new_board[1].remove(piece_at(pos_X, pos_Y, new_board)) # removing the competitor piece
+            new_piece = piece_at(self.pos_x, self.pos_y)
+            new_piece.pos_x = pos_X
+            new_piece.pos_y = pos_Y
 
             print(f"board - rook --- {new_board}")
             return new_board
-
+        return B
 
 class King(Piece):
     def __init__(self, pos_X: int, pos_Y: int, side_: bool):
@@ -203,16 +114,20 @@ class King(Piece):
     def can_move_to(self, pos_X: int, pos_Y: int, B: Board) -> bool:
         '''checks if this king can move to coordinates pos_X, pos_Y on board B according to all chess rules'''
 
-        if self.can_reach(pos_X, pos_Y, B):
+        new_board = Helper.copy_board(B)
+        if self.can_reach(pos_X, pos_Y, new_board):
 
-            piece_to_be_removed = piece_at(pos_X, pos_Y, B)
-            if piece_to_be_removed is not None:
-                B[1].remove(piece_to_be_removed)  # removing the competitor piece
+            if is_piece_at(pos_X, pos_Y, new_board):
+                new_board[1].remove(piece_at(pos_X, pos_Y, new_board))  # removing the competitor piece
+
             # placing the new position of the piece
-            piece_to_be_altered = piece_at(self.pos_x, self.pos_y, B)
-            piece_to_be_altered.pos_x = pos_X;
-            piece_to_be_altered.pos_y = pos_Y;
-            return True;
+            piece_to_be_altered = piece_at(self.pos_x, self.pos_y, new_board)
+            piece_to_be_altered.pos_x = pos_X
+            piece_to_be_altered.pos_y = pos_Y
+
+            if is_check(piece_to_be_altered.side, new_board):
+                return False
+            return True
         else:
             return False
 
@@ -222,17 +137,18 @@ class King(Piece):
         assumes this move is valid according to chess rules
         '''
 
-        new_board: tuple[int, list[Piece]]
-
         if self.can_move_to(pos_X, pos_Y, B):
-
-            self.pos_x = pos_X
-            self.pos_y = pos_Y
-            new_board = B
+            new_board = Helper.copy_board(B)
+            if is_piece_at(pos_X, pos_Y, new_board):
+                new_board[1].remove(piece_at(pos_X, pos_Y, new_board))  # removing the competitor piece
+            new_piece = piece_at(self.pos_x, self.pos_y, new_board)
+            new_piece.pos_x = pos_X
+            new_piece.pos_y = pos_Y
 
             print(f"board - king --- {new_board}")
             return new_board
 
+        return B
 
 class Bishop(Piece):
     def __init__(self, pos_X: int, pos_Y: int, side_: bool):
@@ -246,35 +162,25 @@ class Bishop(Piece):
         current_y = self.pos_y
         current_side = self.side
 
-        # check if there is a piece of the same side on the new position
-        if is_piece_at(pos_X, pos_Y, B):
-            piece_on_there = piece_at(pos_X, pos_Y, B)
-            if current_side == piece_on_there.side:
-                return False
-
         # check if the movement is possible
         if abs(current_x - pos_X) == abs(current_y - pos_Y) and abs(current_x - pos_X) > 0:
-            return True
-        else:
-            return False
 
-    def can_move_to(self, pos_X: int, pos_Y: int, B: Board) -> bool:
-        '''checks if this bishop can move to coordinates pos_X, pos_Y on board B according to all chess rules'''
+            # check if there is a piece of the same side on the new position
+            if is_piece_at(pos_X, pos_Y, B):
+                piece_on_there = piece_at(pos_X, pos_Y, B)
+                if current_side == piece_on_there.side:
+                    return False
 
-        piece_to_be_removed = None
+            # checking overlaping
 
-        if self.can_reach(pos_X, pos_Y, B):
-            current_x = self.pos_x
-            current_y = self.pos_y
-
-            # find out the moves
             x_move = pos_X - current_x
-            y_move = pos_Y - self.pos_y
+            y_move = pos_Y - current_y
             find_moves = x_move + y_move
 
             x_counter: int
             y_counter: int
 
+            #  moves possibles
             if find_moves > 0:
                 x_counter = 1
                 y_counter = 1
@@ -282,6 +188,7 @@ class Bishop(Piece):
             elif find_moves < 0:
                 x_counter = -1
                 y_counter = -1
+
             else:
                 if x_move > 0:
                     x_counter = 1
@@ -293,18 +200,24 @@ class Bishop(Piece):
             while current_x != pos_X and current_y != pos_Y:
                 current_x += x_counter
                 current_y += y_counter
-                if is_piece_at(current_x, current_y, B):
+                if current_x is not pos_X and current_y is not pos_Y and is_piece_at(current_x, current_y, B):
                     return False
+            return True
+        else:
+            return False
 
-            if current_x == pos_X and current_y == pos_Y and is_piece_at(current_x, current_y, B) is True:
-                piece_to_be_removed = piece_at(current_x, current_y, B)
+    def can_move_to(self, pos_X: int, pos_Y: int, B: Board) -> bool:
+        '''checks if this bishop can move to coordinates pos_X, pos_Y on board B according to all chess rules'''
 
-            if piece_to_be_removed is not None:
-                B[1].remove(piece_to_be_removed)  # removing the competitor piece
+        new_board = Helper.copy_board(B)
+        if self.can_reach(pos_X, pos_Y, new_board):
+
+            if is_piece_at(pos_X, pos_X):
+                new_board[1].remove(piece_at(pos_X, pos_Y, new_board))  # removing the competitor piece
             # placing the new position of the piece
-            piece_to_be_altered = piece_at(self.pos_x, self.pos_y, B)
-            piece_to_be_altered.pos_x = current_x;
-            piece_to_be_altered.pos_y = current_y;
+            piece_to_be_altered = piece_at(self.pos_x, self.pos_y, new_board)
+            piece_to_be_altered.pos_x = pos_X;
+            piece_to_be_altered.pos_y = pos_Y;
             return True
         else:
             return False
@@ -316,17 +229,19 @@ class Bishop(Piece):
         assumes this move is valid according to chess rules
         '''
 
-        new_board: tuple[int, list[Piece]]
-
+        # new_board: tuple[int, list[Piece]]
         if self.can_move_to(pos_X, pos_Y, B):
-
-            self.pos_x = pos_X
-            self.pos_y = pos_Y
-            new_board = B
+            new_board = Helper.copy_board(B)
+            if is_piece_at(pos_X, pos_X, new_board):
+                new_board[1].remove(piece_at(pos_X, pos_Y, new_board))  # removing the competitor piece
+            new_piece = piece_at(self.pos_x, self.pos_y, new_board)
+            new_piece.pos_x = pos_X
+            new_piece.pos_y = pos_Y
 
             print(f"board - bishop --- {new_board}")
             return new_board
 
+        return B
 
 class Helper:
     @staticmethod
@@ -338,200 +253,131 @@ class Helper:
         return type(piece) != type_of
 
     @staticmethod
-    def checkmate_info(side: bool, B: Board) -> tuple[bool, list[int, int], list[type, int, int, bool]]:
-
-        move_to_save_from_checkmate = None
-        piece_to_move_to_avoid_checkmate = None
-
-        checkmate_cant_be_avoid = None
+    def checkmate_info(side: bool, B: Board) -> tuple[bool, Optional[Piece], tuple[int, int]]:
 
         board = B[1]
         is_check_possible: bool = is_check(side, B)
 
+        if not is_check_possible:
+            return False, None, (0, 0)
+
         king_in_check = None
         checkmate_pieces_options = list()
 
-        if is_check_possible:
-            # finding which pieces are putting the king in check
-            for piece in board:
-                if Helper.is_type(piece, King) and piece.side == side:
-                    king_in_check = King(piece.pos_x, piece.pos_y, piece.side)
-                if piece.side != side:
-                    # king = King(king_in_check.pos_x, king_in_check.pos_y, king_in_check.side)
+        # finding which pieces are putting the king in check
+        for piece in board:
+            if Helper.is_type(piece, King) and piece.side == side:
+                king_in_check = King(piece.pos_x, piece.pos_y, piece.side)
 
-                    if Helper.is_type(piece, Rook):
-                        rook = Rook(piece.pos_x, piece.pos_y, piece.side)
-                        if rook.can_reach(king_in_check.pos_x, king_in_check.pos_y, B):
-                            checkmate_pieces_options.append(rook)
-                    elif Helper.is_type(piece, Bishop):
-                        bishop = Bishop(piece.pos_x, piece.pos_y, piece.side)
-                        if bishop.can_reach(king_in_check.pos_x, king_in_check.pos_y, B):
-                            checkmate_pieces_options.append(bishop)
-                    elif Helper.is_type(piece, King):
-                        king_opposite = King(piece.pos_x, piece.pos_y, piece.side)
-                        if king_opposite.can_reach(king_in_check.pos_x, king_in_check.pos_y, B):
-                            checkmate_pieces_options.append(king_opposite)
+                for piece2 in board:
+                    if piece2.side != side:
+                        if Helper.is_not_type(piece2, King) and piece2.can_reach(king_in_check.pos_x, king_in_check.pos_y, B):
+                            checkmate_pieces_options.append(piece2)
 
-            for piece in board:
+        # king can run away?
+        king = king_in_check
+        all_King_moves_options = [[king.pos_x, king.pos_y + 1],
+                                  [king.pos_x, king.pos_y - 1],
+                                  [king.pos_x + 1, king.pos_y],
+                                  [king.pos_x - 1, king.pos_y],
+                                  [king.pos_x + 1, king.pos_y + 1],
+                                  [king.pos_x - 1, king.pos_y - 1],
+                                  [king.pos_x + 1, king.pos_y - 1],
+                                  [king.pos_x - 1, king.pos_y + 1]]
+        board_size = B[0]
 
-                # king can run away?
+        for index in range(0, len(all_King_moves_options) - 1):
+            king_moves = all_King_moves_options[index][0], all_King_moves_options[index][1]
+            if king_moves[0] > board_size or king_moves[0] < 1 or king_moves[1] > board_size or king_moves[1] < 1:
+                continue
+            else:
+                can_walk = king.can_reach(king_moves[0], king_moves[1], B)
+                if can_walk:
+                    new_board = king.move_to(king_moves[0], king_moves[1], B)
+                    if (is_check(king.side, new_board)):
+                        continue
+                    else:
+                        print("is not checkmate")
+                        return False, king, king_moves
 
-                king = king_in_check
+        for piece in board:
+            if Helper.is_not_type(piece, King) and piece.side == side:
+                rook = None
+                bishop = None
 
-                all_King_moves_options = [[king.pos_x, king.pos_y + 1], [king.pos_x, king.pos_y - 1],
-                                          [king.pos_x + 1, king.pos_y],
-                                          [king.pos_x - 1, king.pos_y], [king.pos_x + 1, king.pos_y + 1],
-                                          [king.pos_x - 1, king.pos_y - 1],
-                                          [king.pos_x + 1, king.pos_y - 1], [king.pos_x - 1, king.pos_y + 1]]
+                if Helper.is_type(piece, Rook):
+                    rook = Rook(piece.pos_x, piece.pos_y, piece.side)
+                elif Helper.is_type(piece, Bishop):
+                    bishop = Bishop(piece.pos_x, piece.pos_y, piece.side)
 
-                for index in range(0, len(all_King_moves_options) - 1):
-                    king_moves = all_King_moves_options[index][0], all_King_moves_options[index][1]
-                    can_walk = king.can_reach(king_moves[0], king_moves[1], B)
-                    if can_walk:
-                        new_board = king.move_to(king_moves[0], king_moves[1], B)
-                        if (Helper.is_check(king.side, new_board)):
-                            continue
-                        else:
-                            print("is not checkmate")
-                            move_to_save_from_checkmate = [King, king_moves[0], king_moves[1], king.side]
-                            checkmate_cant_be_avoid = False
+                # More than one piece targeting the King can't avoid the check without moving the King
+                if (len(checkmate_pieces_options) == 1):
+                    type_of = type(checkmate_pieces_options[0])
+                    path_to_king = list()
 
-                if Helper.is_not_type(piece, King) and piece.side == side:
-                    rook = None
-                    bishop = None
+                    opp_piece = checkmate_pieces_options[0]
+                    x = king.pos_x
+                    y = king.pos_y
+                    x2 = checkmate_pieces_options[0].pos_x
+                    y2 = checkmate_pieces_options[0].pos_y
 
-                    if Helper.is_type(piece, Rook):
-                        rook = Rook(piece.pos_x, piece.pos_y, piece.side)
-                    elif Helper.is_type(piece, Bishop):
-                        bishop = Bishop(piece.pos_x, piece.pos_y, piece.side)
+                    if rook is not None and rook.can_reach(x2, y2, B):
+                        return False, rook, (x2, y2)
+                    if bishop is not None and bishop.can_reach(x2, y2, B):
+                        return False, bishop, (x2, y2)
 
-                    if (len(checkmate_pieces_options) == 1):
-                        type_of = type(checkmate_pieces_options[0])
-                        path_to_king = list()
-
-                        opp_piece = checkmate_pieces_options[0]
-                        x = king.pos_x
-                        y = king.pos_y
-                        x2 = checkmate_pieces_options[0].pos_x
-                        y2 = checkmate_pieces_options[0].pos_y
-
-                        if rook is not None and rook.can_reach(x2, y2, B):
-                            move_to_save_from_checkmate = [Bishop, x2, y2, king.side]
-                            return False
-                        if bishop is not None and bishop.can_reach(x2, y2, B):
-                            move_to_save_from_checkmate = [Bishop, x2, y2, king.side]
-                            return False
-
-                        # torre com a mesma row
-                        if Helper.is_type(opp_piece, Rook):
-                            if x2 == x:
-                                while y2 != y:
-                                    path_to_king.append([x2, y2])
-                                    if y2 < y:
-                                        y2 += 1
-                                    else:
-                                        y2 -= 1
-
-                            # torre com a mesma col
-                            if y2 == y:
-                                while x2 != x:
-                                    path_to_king.append([x2, y2])
-                                    if x2 < x:
-                                        x2 += 1
-                                    else:
-                                        x2 -= 1
-
-                        elif Helper.is_type(opp_piece, Bishop):
-
-                            while x2 < x:
-                                if y2 < y:
-                                    path_to_king.append([x2, y2])
-                                    x2 += 1
-                                    y2 += 1
-
-                                if y2 > y:
-                                    path_to_king.append([x2, y2])
-                                    x2 += 1
-                                    y2 -= 1
-
-                            while x2 > x:
+                    # torre com a mesma row
+                    if Helper.is_type(opp_piece, Rook):
+                        if x2 == x:
+                            while y2 != y:
                                 path_to_king.append([x2, y2])
                                 if y2 < y:
-                                    x2 -= 1
                                     y2 += 1
-                                if y2 > y:
-                                    x2 -= 1
-                                    y2 -= 1
-                        elif Helper.is_type(opp_piece, King):
-                            # rook moves
-                            if x2 == x:
-                                while y2 != y:
-                                    path_to_king.append([x2, y2])
-                                    if y2 < y:
-                                        y2 += 1
-                                    else:
-                                        y2 -= 1
-
-                            if y2 == y:
-                                while x2 != x:
-                                    path_to_king.append([x2, y2])
-                                    if x2 < x:
-                                        x2 += 1
-                                    else:
-                                        x2 -= 1
-
-                            # bishop moves
-                            while x2 < x:
-                                if y2 < y:
-                                    path_to_king.append([x2, y2])
-                                    x2 += 1
-                                    y2 += 1
-
-                                if y2 > y:
-                                    path_to_king.append([x2, y2])
-                                    x2 += 1
+                                else:
                                     y2 -= 1
 
-                            while x2 > x:
+                        # torre com a mesma col
+                        elif y2 == y:
+                            while x2 != x:
                                 path_to_king.append([x2, y2])
-                                if y2 < y:
-                                    x2 -= 1
-                                    y2 += 1
-                                if y2 > y:
-                                    x2 -= 1
-                                    y2 -= 1
-
-                        new_board = B
-
-                        for path in path_to_king:
-
-                            if rook is not None and rook.can_reach(path[0], path[1], B):
-                                rook.move_to(path[0], path[1], new_board)
-                                if Helper.is_check(rook.side):
-                                    new_board = B
-                                    continue
+                                if x2 < x:
+                                    x2 += 1
                                 else:
-                                    move_to_save_from_checkmate = [path[0], path[1]]
-                                    piece_to_move_to_avoid_checkmate = [Rook, rook.pos_x, rook.pos_y, rook.side]
-                                checkmate_cant_be_avoid = False
-                            if bishop is not None and bishop.can_reach(path[0], path[1], B):
-                                bishop.move_to(path[0], path[1], new_board)
-                                if Helper.is_check(bishop.side):
-                                    new_board = B
-                                    continue
-                                else:
-                                    move_to_save_from_checkmate = [path[0], path[1]]
-                                    piece_to_move_to_avoid_checkmate = [Bishop, bishop.pos_x, bishop.pos_y, bishop.side]
-                                checkmate_cant_be_avoid = False
+                                    x2 -= 1
 
-                    elif len(checkmate_pieces_options) > 1:
-                        checkmate_cant_be_avoid = True
-            checkmate_cant_be_avoid = True
+                    elif Helper.is_type(opp_piece, Bishop):
+                        for item in zip(range_list(x2, x), range_list(y2, y)):
+                            path_to_king.append([item[0], item[1]])
 
-        else:
-            checkmate_cant_be_avoid = False
+                    for path in path_to_king:
+                        if rook is not None and rook.can_reach(path[0], path[1], B):
+                            new_board = rook.move_to(path[0], path[1], B)
+                            if is_check(rook.side, new_board):
+                                continue
+                            else:
+                                return False, rook, (path[0], path[1])
+                        if bishop is not None and bishop.can_reach(path[0], path[1], B):
+                            new_board = bishop.move_to(path[0], path[1], B)
+                            if is_check(bishop.side, new_board):
+                                continue
+                            else:
+                                return False, bishop, (path[0], path[1])
 
-        return checkmate_cant_be_avoid, move_to_save_from_checkmate, piece_to_move_to_avoid_checkmate
+                else:
+                    return True, None, (0, 0)
+        return True, None, (0, 0)
+
+    @staticmethod
+    def copy_board(B: Board) -> Board:
+        pieces = list()
+        for piece in B[1]:
+            if Helper.is_type(piece, King):
+                pieces.append(King(piece.pos_x, piece.pos_y, piece.side))
+            elif Helper.is_type(piece, Bishop):
+                pieces.append(Bishop(piece.pos_x, piece.pos_y, piece.side))
+            elif Helper.is_type(piece, Rook):
+                pieces.append(Rook(piece.pos_x, piece.pos_y, piece.side))
+        return B[0], pieces
 
 
 # find type
@@ -546,85 +392,32 @@ def type_of_piece(piece, option_rook, option_bishop, option_king):
     else:
         print("error on the piece sent")
 
-# variables for is_check and is_checkmate and
-
-# king_in_check = None
-# checkmate_pieces_options = list()
 
 def is_check(side: bool, B: Board) -> bool:
-    is_reachable = False
 
     board = B[1]
     for piece in board:
 
         if Helper.is_type(piece, King) and piece.side == side:
+            king_in_check = King(piece.pos_x, piece.pos_y, piece.side)
+
             for piece2 in board:
                 if piece2.side != side:
                     if Helper.is_type(piece2, Rook):
                         rook = Rook(piece2.pos_x, piece2.pos_y, piece2.side)
-                        if (rook.can_reach(piece.pos_x, piece.pos_y, B)):
-                            is_reachable = True
-                            print("it's check")
+                        if (rook.can_reach(king_in_check.pos_x, king_in_check.pos_y, B)):
+                            return True
 
                     elif Helper.is_type(piece2, Bishop):
                         bishop = Bishop(piece2.pos_x, piece2.pos_y, piece2.side)
                         if (bishop.can_reach(piece.pos_x, piece.pos_y, B)):
-                            is_reachable = True
-                            print("it's check")
+                            return True
 
                     elif Helper.is_type(piece2, King):
                         king = King(piece2.pos_x, piece2.pos_y, piece2.side)
                         if (king.can_reach(piece.pos_x, piece.pos_y, B)):
-                            is_reachable = True
-                            print("it's check")
-
-                    if is_reachable:
-                        return True;
+                            return True
     return False
-
-# def is_check(side: bool, B: Board) -> bool:
-#     '''
-#     checks if configuration of B is check for side
-#     Hint: use can_reach
-#     '''
-#
-#     is_reachable = False
-#
-#     board = B[1]
-#     for piece in board:
-#
-#         if is_type(piece, King) and piece.side == side:
-#             for piece2 in board:
-#                 if piece2.side != side:
-#                     if is_type(piece2, Rook):
-#                         rook = Rook(piece2.pos_x, piece2.pos_y, piece2.side)
-#                         if(rook.can_reach(piece.pos_x, piece.pos_y, B)):
-#                             is_reachable = True
-#                             print("it's check")
-#
-#                     elif is_type(piece2, Bishop):
-#                         bishop = Bishop(piece2.pos_x, piece2.pos_y, piece2.side)
-#                         if (bishop.can_reach(piece.pos_x, piece.pos_y, B)):
-#                             is_reachable = True
-#                             print("it's check")
-#
-#                     elif is_type(piece2, King):
-#                         king = King(piece2.pos_x, piece2.pos_y, piece2.side)
-#                         if (king.can_reach(piece.pos_x, piece.pos_y, B)):
-#                             is_reachable = True
-#                             print("it's check")
-#
-#                     if is_reachable:
-#                         return True;
-#     return False
-
-
-# variables importants to is checkmate and find_black_move
-
-
-
-
-
 
 
 def is_checkmate(side: bool, B: Board) -> bool:
@@ -637,20 +430,9 @@ def is_checkmate(side: bool, B: Board) -> bool:
     '''
 
     info = Helper.checkmate_info(side, B)
+    print(info)
+    print(info[0])
     return info[0]
-
-def get_piece_risk_checkmate_position(king_X, king_Y, type_of ,x, y, side, x2, y2, B: Board):
-    king = King(king_X, king_Y, side)
-
-    if type_of is Rook:
-        rook = Rook(x, y, side)
-    elif type_of is Bishop:
-        bishop = Bishop(x, y, side)
-
-    if rook.can_reach(x2, y2, B):
-        next_move = [rook.pos_x, rook.pos_y, rook.side], [x2, y2]
-
-
 
 
 def read_board(filename: str) -> Board:
@@ -852,6 +634,7 @@ def find_black_move(B: Board) -> tuple[Piece, int, int]:
                         king = King(piece.pos_x, piece.pos_y, piece.side)
                         if king.can_reach(pos_x, pos_y, B):
                             return king, pos_x, pos_y
+
 
 
 def conf2unicode(B: Board) -> str:
