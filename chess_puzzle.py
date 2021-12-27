@@ -538,34 +538,25 @@ def find_black_move(B: Board) -> tuple[Piece, int, int]:
     - use can_move_to
     '''
 
-
     size = B[0]
     piece_list = B[1]
     black_elem_list = list()
     white_elem_list = list()
 
     can_reach_enemy = list()
-
-    check_info = Helper.checkmate_info()
-    move_to_save_from_checkmate = check_info[1]
-    piece_to_move_to_avoid_checkmate = check_info[2]
-
-
-
     check_risk = is_check(False, B)
 
     if check_risk:
 
-        #  to update move_to_save_from_checkmate and piece_to_move_to_avoid_checkmate
-        is_checkmate(False, B)
+        check_info = Helper.checkmate_info(False, B)
+        piece_to_move_to_avoid_checkmate = check_info[1]
+        move_to_save_from_checkmate = check_info[2]
 
-        if piece_to_move_to_avoid_checkmate and move_to_save_from_checkmate:
-            return move_to_save_from_checkmate[0], move_to_save_from_checkmate[1], move_to_save_from_checkmate[2]
+        #  to update move_to_save_from_checkmate and piece_to_move_to_avoid_checkmate
+        if piece_to_move_to_avoid_checkmate is not None:
+            return piece_to_move_to_avoid_checkmate, move_to_save_from_checkmate[0], move_to_save_from_checkmate[1]
 
     else:
-        rook = None
-        bishop = None
-        king = None
 
         for piece in piece_list:
             if piece.side is False:
@@ -575,41 +566,17 @@ def find_black_move(B: Board) -> tuple[Piece, int, int]:
 
         for piece in black_elem_list:
             for piece2 in white_elem_list:
-
-                if Helper.is_type(piece, Rook):
-                    rook = Rook(piece.pos_x, piece.pos_y, piece.side)
-                    if rook.can_reach(piece2.pos_x, piece2.pos_y, B):
-                        can_reach_enemy.append(piece2)
-
-                elif Helper.is_type(piece, Bishop):
-                    bishop = Bishop(piece.pos_x, piece.pos_y, piece.side)
-                    if bishop.can_reach(piece2.pos_x, piece2.pos_y, B):
-                        can_reach_enemy.append(piece2)
-
-                elif Helper.is_type(piece, King):
-                    king = King(piece.pos_x, piece.pos_y, piece.side)
-                    if king.can_reach(piece2.pos_x, piece2.pos_y, B):
-                        can_reach_enemy.append(piece2)
+                if piece.can_reach(piece2.pos_x, piece2.pos_y, B):
+                    can_reach_enemy.append([piece, piece2])
 
         if len(can_reach_enemy) == 1:
 
-            if rook is not None:
-                return rook, can_reach_enemy[0][0], can_reach_enemy[0][1]
-            elif bishop is not None:
-                return bishop, can_reach_enemy[0][0], can_reach_enemy[0][1]
-            elif King is not None:
-                return king, can_reach_enemy[0][0], can_reach_enemy[0][1]
+            return can_reach_enemy[0][0], can_reach_enemy[0][1].pos_x, can_reach_enemy[0][1].pos_y
 
         elif len(can_reach_enemy) > 1:
             index = random.randrange(0, len(can_reach_enemy)-1)
 
-            if rook is not None:
-                return rook, can_reach_enemy[index][0], can_reach_enemy[index][1]
-            elif bishop is not None:
-                return bishop, can_reach_enemy[index][0], can_reach_enemy[index][1]
-            elif King is not None:
-                return king, can_reach_enemy[index][0], can_reach_enemy[index][1]
-
+            return can_reach_enemy[index][0], can_reach_enemy[index][1].pos_x, can_reach_enemy[index][1].pos_y
         else:
 
             while True:
@@ -618,23 +585,11 @@ def find_black_move(B: Board) -> tuple[Piece, int, int]:
                 pos_y = random.randrange(1, size)
 
                 for piece in black_elem_list:
+                    if piece.can_reach(pos_x, pos_y, B):
+                        return piece, pos_x, pos_y
 
-                    if Helper.is_type(piece, Rook):
-                        rook = Rook(piece.pos_x, piece.pos_y, piece.side)
-                        if rook.can_reach(pos_x, pos_y, B):
-
-                            return rook, pos_x, pos_y
-
-                    elif Helper.is_type(piece, Bishop):
-                        bishop = Bishop(piece.pos_x, piece.pos_y, piece.side)
-                        if bishop.can_reach(pos_x, pos_y, B):
-                            return bishop, pos_x, pos_y
-
-                    elif Helper.is_type(piece, King):
-                        king = King(piece.pos_x, piece.pos_y, piece.side)
-                        if king.can_reach(pos_x, pos_y, B):
-                            return king, pos_x, pos_y
-
+                    else:
+                        continue
 
 
 def conf2unicode(B: Board) -> str:
