@@ -656,17 +656,107 @@ def main() -> None:
     ...
     '''
 
-    print("File name for initial configuration:")
+    # filename = input("File name for initial configuration: ")
+    filename = "board_examp2.txt"
+    is_working = execute(filename)
 
-    # requires_input = True
-    # while requires_input:
-    #     filename = input()
-    #     if filename == "QUIT":
-    #         return
-    #     requires_input = not execute(filename)
+    if not is_working:
+        while not is_working:
+            filename = input("This is not a valid file. File name for initial configuration: ")
+            if filename == "QUIT":
+                return
+            is_working = execute(filename)
+    else:
+        print("The initial configuration is:")
+        execute(filename)
+        board = read_board(filename)
 
+        not_chekmate = True
+        while not_chekmate:
 
-    execute("board_examp.txt")
+            white_move = input("Next move of white: ")
+
+            if white_move == "QUIT":
+                filename_to_save = input("File name to store the configuration: ")
+                try:
+                    save_board(filename_to_save, board)
+                    print("The game configuration saved.")
+                    return
+                except IOError:
+                    print("error on saving")
+            else:
+                initial_pos: str = None
+                final_pos: str = None
+
+                index_initial_pos: tuple[int, int] = None
+                index_final_pos: tuple[int, int] = None
+
+                if len(white_move) == 4:
+
+                    initial_pos = white_move[0:2]
+                    final_pos = white_move[2:]
+
+                elif len(white_move) == 6:
+                    initial_pos = white_move[0:3]
+                    final_pos = white_move[3:]
+
+                elif len(white_move) == 5:
+
+                    if white_move[2].isdigit():
+                        initial_pos = white_move[0:3]
+                        final_pos = white_move[3:]
+                    else:
+                        initial_pos = white_move[0:2]
+                        final_pos = white_move[2:]
+
+                else:
+                    white_move = input("This is not a valid move. Next move of White: ")
+
+                index_initial_pos = location2index(initial_pos)
+                index_final_pos = location2index(final_pos)
+                temp_board = board
+
+                if is_piece_at(index_initial_pos[0], index_initial_pos[1], board):
+                    piece_to_move = piece_at(index_initial_pos[0], index_initial_pos[1], board)
+
+                    if piece_to_move.can_reach(index_final_pos[0], index_final_pos[1], board):
+
+                        temp_board = piece_to_move.move_to(index_final_pos[0], index_final_pos[1], temp_board)
+                        if is_check(True, temp_board):
+                            print("it's check, can't make this move")
+                        else:
+                            board = temp_board
+                            save_board(filename, board)
+                            print("The configuration after White's move is: \n")
+                            print(execute(filename))
+                            if is_checkmate(False, board):
+                                print("Game over. White wins.")
+                                return
+                            else:
+                                black_move = find_black_move(board)
+                                black_piece = black_move[0]
+                                # black_move_initial_pos = black_piece.pos_x, black_piece.pos_y
+                                # black_move_final_pos = black_move[1], black_move[2]
+
+                                loc_initial_pos = index2location(black_piece.pos_x, black_piece.pos_y)
+                                loc_final_pos = index2location(black_move[1], black_move[2])
+
+                                board = black_piece.move_to(black_move[1], black_move[2], board)
+
+                                save_board(filename, board)
+                                print("Next move of Black is " + loc_initial_pos + loc_final_pos + ". The configuration after Black's move is: \n")
+                                print(execute(filename))
+
+                                if is_checkmate(True, board):
+                                    print("Game over. Black wins.")
+                                    return
+                                continue
+                    else:
+                        print("not possible to reach")
+
+                else:
+                    print("wrong move")
+
 
 
 if __name__ == '__main__':  # keep this in
