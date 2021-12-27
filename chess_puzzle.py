@@ -573,7 +573,7 @@ def find_black_move(B: Board) -> tuple[Piece, int, int]:
 
         for piece in black_elem_list:
             for piece2 in white_elem_list:
-                if piece.can_reach(piece2.pos_x, piece2.pos_y, B):
+                if piece.can_move_to(piece2.pos_x, piece2.pos_y, B):
                     can_reach_enemy.append([piece, piece2])
 
         if len(can_reach_enemy) == 1:
@@ -592,7 +592,7 @@ def find_black_move(B: Board) -> tuple[Piece, int, int]:
                 pos_y = random.randrange(1, size)
 
                 for piece in black_elem_list:
-                    if piece.can_reach(pos_x, pos_y, B):
+                    if piece.can_move_to(pos_x, pos_y, B):
                         return piece, pos_x, pos_y
 
                     else:
@@ -693,7 +693,7 @@ def execute(filename) -> bool:
                 if is_piece_at(index_initial_pos[0], index_initial_pos[1], temp_board):
                     piece_to_move = piece_at(index_initial_pos[0], index_initial_pos[1], temp_board)
 
-                    if piece_to_move.can_reach(index_final_pos[0], index_final_pos[1], temp_board):
+                    if piece_to_move.can_move_to(index_final_pos[0], index_final_pos[1], temp_board):
 
                         temp_board = piece_to_move.move_to(index_final_pos[0], index_final_pos[1], temp_board)
 
@@ -733,84 +733,32 @@ def execute(filename) -> bool:
 
                 else:
                     print("wrong move")
+        # return True
+    except IOError:
 
+        filename = input("This is not a valid file. File name for initial configuration: ")
+        if filename == "QUIT":
+            return
+        execute(filename)
+
+        print("This is not a valid file. File name for initial configuration: ")
+        return False
+
+
+def main() -> None:
+    '''
+    runs the play
+
+    Hint: implementation of this could start as follows:
+    filename = input("File name for initial configuration: ")
+    ...
+    '''
+
+    filename = "board_examp2.txt"
+
+    # filename = input("File name for initial configuration: ")
+    execute(filename)
 
 
 if __name__ == '__main__':  # keep this in
     main()
-
-# wb1 = Bishop(1, 1, True)
-# wr1 = Rook(1, 2, True)
-# wb2 = Bishop(5, 2, True)
-# bk = King(2, 3, False)
-# br1 = Rook(4, 3, False)
-# br2 = Rook(2, 4, False)
-# br3 = Rook(5, 4, False)
-# wr2 = Rook(1, 5, True)
-# wk = King(3, 5, True)
-# br2a = Rook(1, 5, False)
-# wr2a = Rook(2, 5, True)
-# wr2b = Rook(2, 4, True)
-#
-# B2 = (5, [wb1, wr1, wb2, bk, br1, br2, br3, wr2, wk])
-#
-# wk1 = King(3, 4, True)
-# wb1 = Rook(1, 1, True)
-# wr1 = Rook(1, 2, True)
-# wb2 = Rook(5, 2, True)
-# bk = Rook(2, 3, False)
-# br1 = Bishop(4, 3, False)
-# br2 = Rook(1, 4, False)
-#
-# B2 = (5, [wk1, wb1, wr1, wb2, bk, br1, br2, ])
-# print(B2)
-# wk1.move_to(2, 3, B2)
-# br2.move_to(1, 2, B2)
-# br1.move_to(5,2, B2)
-# br2.move_to(1, 1, B2)
-# print(B2)
-
-
-
-
-# wk = King(1, 1, True)
-# wr1 = Rook(4, 1, True)
-# wb1 = Bishop(4, 2, True)
-# br1 = Rook(2, 5, False)
-# bb1 = Bishop(3, 5, False)
-# bk = King(4, 4, False)
-#
-#
-# B2 = (5, [wk, wr1, wb1, br1, bb1, bk])
-# print(B2)
-#
-# print(wb1.move_to(3, 3, B2))
-# is_check(False, B2)
-#
-# print(bk.move_to(3, 3, B2))
-
-# wr1.move_to(3, 3, B2)
-# is_check(wr1.side, B2)
-# is_checkmate(wr1.side, B2)
-
-
-
-
-
-
-# print(is_piece_at(5, 4, B2));
-# print(is_piece_at(4, 4, B2));
-#
-# print("Can reach: " + str(br2.can_reach(5, 4, B2)))  # False
-# print("Can reach: " + str(br2.can_reach(3, 4, B2)))  # true
-# print("Can reach: " + str(br2.can_reach(2, 5, B2)))  # true, other side on it
-
-# print(f" king - test reach {wb1.can_reach(3, 3, B2)}")
-# print(f" king - can move to {wb1.can_move_to(3, 3, B2)}")
-# print(f" king - move {bk.move_to(3, 3, B2)}")
-#
-# B2 = (5, [wb1, wr1, wb2, bk, br1, br2a, br3, wr2b, wk])
-# print(f" is check? --- {is_check(True, B2)}")
-#
-# print(type(bk))
-# print(type(bk) == King)
