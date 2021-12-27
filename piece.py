@@ -27,3 +27,7 @@ class Piece(metaclass=ABCMeta):
     def move_to(self, pos_X: int, pos_Y: int, B: Board) -> Board:
         pass
 
+    # Return all positions until the target, if it can't reach, an empty array is returned
+    # @abstractmethod
+    # def path_to(self, pos_X: int, pos_Y: int, B: Board) -> list[tuple[int, int]]:
+    #     pass

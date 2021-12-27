@@ -2,7 +2,7 @@ import random
 
 from typing import Optional
 from piece import Piece
-from random import *
+# from random import *
 from helpers import *
 
 
@@ -83,13 +83,17 @@ class Rook(Piece):
             new_board = Helper.copy_board(B)
             if is_piece_at(pos_X, pos_Y, new_board):
                 new_board[1].remove(piece_at(pos_X, pos_Y, new_board)) # removing the competitor piece
-            new_piece = piece_at(self.pos_x, self.pos_y)
+            new_piece = piece_at(self.pos_x, self.pos_y, new_board)
             new_piece.pos_x = pos_X
             new_piece.pos_y = pos_Y
 
-            print(f"board - rook --- {new_board}")
+            # print(f"board - rook --- {new_board}")
             return new_board
         return B
+
+    def __repr__(self):
+        side = "W" if self.side else "B"
+        return "Rook {} x:{} y:{}".format(side, self.pos_x, self.pos_y)
 
 class King(Piece):
     def __init__(self, pos_X: int, pos_Y: int, side_: bool):
@@ -145,10 +149,14 @@ class King(Piece):
             new_piece.pos_x = pos_X
             new_piece.pos_y = pos_Y
 
-            print(f"board - king --- {new_board}")
+            # print(f"board - king --- {new_board}")
             return new_board
 
         return B
+
+    def __repr__(self):
+        side = "W" if self.side else "B"
+        return "King {} x:{} y:{}".format(side, self.pos_x, self.pos_y)
 
 class Bishop(Piece):
     def __init__(self, pos_X: int, pos_Y: int, side_: bool):
@@ -212,12 +220,12 @@ class Bishop(Piece):
         new_board = Helper.copy_board(B)
         if self.can_reach(pos_X, pos_Y, new_board):
 
-            if is_piece_at(pos_X, pos_X):
+            if is_piece_at(pos_X, pos_Y, B):
                 new_board[1].remove(piece_at(pos_X, pos_Y, new_board))  # removing the competitor piece
             # placing the new position of the piece
             piece_to_be_altered = piece_at(self.pos_x, self.pos_y, new_board)
-            piece_to_be_altered.pos_x = pos_X;
-            piece_to_be_altered.pos_y = pos_Y;
+            piece_to_be_altered.pos_x = pos_X
+            piece_to_be_altered.pos_y = pos_Y
             return True
         else:
             return False
@@ -232,16 +240,20 @@ class Bishop(Piece):
         # new_board: tuple[int, list[Piece]]
         if self.can_move_to(pos_X, pos_Y, B):
             new_board = Helper.copy_board(B)
-            if is_piece_at(pos_X, pos_X, new_board):
+            if is_piece_at(pos_X, pos_Y, new_board):
                 new_board[1].remove(piece_at(pos_X, pos_Y, new_board))  # removing the competitor piece
             new_piece = piece_at(self.pos_x, self.pos_y, new_board)
             new_piece.pos_x = pos_X
             new_piece.pos_y = pos_Y
 
-            print(f"board - bishop --- {new_board}")
+            # print(f"board - bishop --- {new_board}")
             return new_board
 
         return B
+
+    def __repr__(self):
+        side = "W" if self.side else "B"
+        return "Bishop {} x:{} y:{}".format(side, self.pos_x, self.pos_y)
 
 class Helper:
     @staticmethod
@@ -254,6 +266,9 @@ class Helper:
 
     @staticmethod
     def checkmate_info(side: bool, B: Board) -> tuple[bool, Optional[Piece], tuple[int, int]]:
+        # return if it's a checkmate:
+        # if true, return no piece and an empty tuple
+        # otherwise: return False, the piece that can be used to save the check and the movement that needs to be done
 
         board = B[1]
         is_check_possible: bool = is_check(side, B)
@@ -371,6 +386,7 @@ class Helper:
     def copy_board(B: Board) -> Board:
         pieces = list()
         for piece in B[1]:
+            # pieces.append(piece)
             if Helper.is_type(piece, King):
                 pieces.append(King(piece.pos_x, piece.pos_y, piece.side))
             elif Helper.is_type(piece, Bishop):
@@ -403,20 +419,10 @@ def is_check(side: bool, B: Board) -> bool:
 
             for piece2 in board:
                 if piece2.side != side:
-                    if Helper.is_type(piece2, Rook):
-                        rook = Rook(piece2.pos_x, piece2.pos_y, piece2.side)
-                        if (rook.can_reach(king_in_check.pos_x, king_in_check.pos_y, B)):
-                            return True
+                    if piece2.can_reach(king_in_check.pos_x, king_in_check.pos_y, B):
+                        print("It's check")
+                        return True
 
-                    elif Helper.is_type(piece2, Bishop):
-                        bishop = Bishop(piece2.pos_x, piece2.pos_y, piece2.side)
-                        if (bishop.can_reach(piece.pos_x, piece.pos_y, B)):
-                            return True
-
-                    elif Helper.is_type(piece2, King):
-                        king = King(piece2.pos_x, piece2.pos_y, piece2.side)
-                        if (king.can_reach(piece.pos_x, piece.pos_y, B)):
-                            return True
     return False
 
 
@@ -430,8 +436,8 @@ def is_checkmate(side: bool, B: Board) -> bool:
     '''
 
     info = Helper.checkmate_info(side, B)
-    print(info)
-    print(info[0])
+    # print(info)
+    # print(info[0])
     return info[0]
 
 
@@ -449,11 +455,12 @@ def read_board(filename: str) -> Board:
 
         white_pieces_list = line2.replace("\n", "").split(", ")
         line3 = f.readline()       #black
+        f.close()
 
         black_pieces_list = line3.replace("\n", "").split(", ")
         pieces_list = list()
         side_list = [white_pieces_list, black_pieces_list]
-        print(side_list)
+        # print(side_list)
 
         # variables
         piece_obj = None
@@ -637,49 +644,22 @@ def conf2unicode(B: Board) -> str:
 
 def execute(filename) -> bool:
     try:
-        board = read_board(filename)
-        print("The initial configuration is:")
-        print(conf2unicode(board))
+        started = False
+        if not started:
+            board = read_board(filename)
+            print("The initial configuration is:")
+            print(conf2unicode(board))
+            started = True
 
-        return True
-    except IOError:
-        print("This is not a valid file. File name for initial configuration: ")
-        return False
-
-
-def main() -> None:
-    '''
-    runs the play
-
-    Hint: implementation of this could start as follows:
-    filename = input("File name for initial configuration: ")
-    ...
-    '''
-
-    # filename = input("File name for initial configuration: ")
-    filename = "board_examp2.txt"
-    is_working = execute(filename)
-
-    if not is_working:
-        while not is_working:
-            filename = input("This is not a valid file. File name for initial configuration: ")
-            if filename == "QUIT":
-                return
-            is_working = execute(filename)
-    else:
-        print("The initial configuration is:")
-        execute(filename)
-        board = read_board(filename)
-
+        temp_board = Helper.copy_board(board)
         not_chekmate = True
+
         while not_chekmate:
-
             white_move = input("Next move of white: ")
-
             if white_move == "QUIT":
                 filename_to_save = input("File name to store the configuration: ")
                 try:
-                    save_board(filename_to_save, board)
+                    save_board(filename_to_save, temp_board)
                     print("The game configuration saved.")
                     return
                 except IOError:
@@ -688,52 +668,48 @@ def main() -> None:
                 initial_pos: str = None
                 final_pos: str = None
 
-                index_initial_pos: tuple[int, int] = None
-                index_final_pos: tuple[int, int] = None
-
+                # checking if it's valid
                 if len(white_move) == 4:
-
                     initial_pos = white_move[0:2]
                     final_pos = white_move[2:]
-
                 elif len(white_move) == 6:
                     initial_pos = white_move[0:3]
                     final_pos = white_move[3:]
-
                 elif len(white_move) == 5:
-
                     if white_move[2].isdigit():
                         initial_pos = white_move[0:3]
                         final_pos = white_move[3:]
                     else:
                         initial_pos = white_move[0:2]
                         final_pos = white_move[2:]
-
                 else:
-                    white_move = input("This is not a valid move. Next move of White: ")
+                    print("This is not a valid move.")
+                    continue
 
                 index_initial_pos = location2index(initial_pos)
                 index_final_pos = location2index(final_pos)
-                temp_board = board
 
-                if is_piece_at(index_initial_pos[0], index_initial_pos[1], board):
-                    piece_to_move = piece_at(index_initial_pos[0], index_initial_pos[1], board)
 
-                    if piece_to_move.can_reach(index_final_pos[0], index_final_pos[1], board):
+                if is_piece_at(index_initial_pos[0], index_initial_pos[1], temp_board):
+                    piece_to_move = piece_at(index_initial_pos[0], index_initial_pos[1], temp_board)
+
+                    if piece_to_move.can_reach(index_final_pos[0], index_final_pos[1], temp_board):
 
                         temp_board = piece_to_move.move_to(index_final_pos[0], index_final_pos[1], temp_board)
+
                         if is_check(True, temp_board):
                             print("it's check, can't make this move")
                         else:
-                            board = temp_board
-                            save_board(filename, board)
+                            # board = Helper.copy_board(temp_board)
+                            # save_board(filename, board)
                             print("The configuration after White's move is: \n")
-                            print(execute(filename))
-                            if is_checkmate(False, board):
+                            print(conf2unicode(temp_board))
+
+                            if is_checkmate(False, temp_board):
                                 print("Game over. White wins.")
                                 return
                             else:
-                                black_move = find_black_move(board)
+                                black_move = find_black_move(temp_board)
                                 black_piece = black_move[0]
                                 # black_move_initial_pos = black_piece.pos_x, black_piece.pos_y
                                 # black_move_final_pos = black_move[1], black_move[2]
@@ -741,13 +717,14 @@ def main() -> None:
                                 loc_initial_pos = index2location(black_piece.pos_x, black_piece.pos_y)
                                 loc_final_pos = index2location(black_move[1], black_move[2])
 
-                                board = black_piece.move_to(black_move[1], black_move[2], board)
+                                temp_board = black_piece.move_to(black_move[1], black_move[2], temp_board)
+                                # save_board(filename, board)
+                                print(
+                                    "Next move of Black is " + loc_initial_pos + loc_final_pos + ". The configuration after Black's move is: \n")
+                                # execute(filename)
+                                print(conf2unicode(temp_board))
 
-                                save_board(filename, board)
-                                print("Next move of Black is " + loc_initial_pos + loc_final_pos + ". The configuration after Black's move is: \n")
-                                print(execute(filename))
-
-                                if is_checkmate(True, board):
+                                if is_checkmate(True, temp_board):
                                     print("Game over. Black wins.")
                                     return
                                 continue

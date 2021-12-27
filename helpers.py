@@ -21,7 +21,6 @@ def is_piece_at(pos_X: int, pos_Y: int, B: Board) -> bool:
     '''checks if there is piece at coordinates pox_X, pos_Y of board B'''
     for piece in B[1]:
         if piece.pos_x == pos_X and piece.pos_y == pos_Y:
-            print("Is piece is working")
             return True
     return False
 
@@ -39,6 +38,13 @@ def piece_at(pos_X: int, pos_Y: int, B: Board) -> Piece:
 def is_equal(num, new_num):
     return new_num == num
 
+
+def range_list(a: int, b: int) -> [int]:
+    if a > b:
+        step = -1
+    else:
+        step = 1
+    return list(range(a, b, step))
 
 
 
