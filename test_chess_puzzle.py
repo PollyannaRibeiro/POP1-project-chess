@@ -99,7 +99,8 @@ wr2a = Rook(2, 5, True)
 
 
 def test_can_move_to1():
-    B2 = (5, [wb1, wr1, wb2, bk, br1, br2a, br3, wr2a, wk])
+    bk2 = King(3, 1, False)
+    B2 = (5, [wb1, wr1, wb2, bk2, br1, br2a, br3, wr2a, wk])
     assert wr2a.can_move_to(2, 4, B2) == False
     B3 = (10, [wr2_, wr3_, wb1_, bk_, br1_])
     assert br1_.can_move_to(7, 6, B3) == True
@@ -111,7 +112,8 @@ def test_can_move_to1():
 
 
 def test_move_to():
-    B = (5, [wb1, wr1, wb2, bk, br1, br2a, br3, wr2a, wk])
+    bk2 = King(3, 1, False)
+    B = (5, [wb1, wr1, wb2, bk2, br1, br2a, br3, wr2a, wk])
     assert wr2a.move_to(2, 4, B) == B               # can't move because it's check
     B2 = (10, [wr1_, wr2_, wr3_, wb1_, bk_, br1_])
     assert br1_.move_to(7, 6, B2) == B2             # can't move because is checkmate
@@ -169,7 +171,8 @@ def test_type_of_piece():
     assert type_of_piece(br1, "♜", "♝", "♚") == "♜"
     assert type_of_piece(bb1_, "♜", "♝", "♚") == "♝"
     assert type_of_piece(bk, "♜", "♝", "♚") == "♚"
-    assert type_of_piece(none_piece, "♜", "♝", "♚") is None
+    with pytest.raises(Exception):
+        type_of_piece(none_piece, "♜", "♝", "♚")
 
 
 # ---------- chess_puzzle_functions -----------------------
@@ -179,7 +182,8 @@ wr2b = Rook(2, 4, True)
 
 
 def test_is_check1():
-    B2 = (5, [wb1, wr1, wb2, bk, br1, br2a, br3, wr2b, wk])
+    bk2 = King(3, 1, False)
+    B2 = (5, [wb1, wr1, wb2, bk2, br1, br2a, br3, wr2b, wk])
     assert is_check(True, B2) == True
     B3 = (10, [wr1_, wr2_, wr3_, wb1_, bk_, br1_])
     assert is_check(False, B3) == True
@@ -191,7 +195,7 @@ def test_is_check1():
     B3 = (10, [wr2_, wb1_, bk_, br1_, bb1_])
     assert is_check(False, B3) == True
 
-    B4 = (5, [wb1, wr1, wb2, bk, br1, br2a, br3, wr2b, wkb])
+    B4 = (5, [wb1, wr1, wb2, bk2, br1, br2a, br3, wr2b, wkb])
     assert is_check(True, B4) == False
 
 
@@ -216,8 +220,9 @@ def test_is_checkmate1():
 def test_checkmate_info():
 
     # It's check and can't do anything to change it
+    bk2 = King(3, 1, False)
     br2b = Rook(4, 5, False)
-    B1 = (5, [wb1, wr1, wb2, bk, br1, br2b, br3, wr2, wk])
+    B1 = (5, [wb1, wr1, wb2, bk2, br1, br2b, br3, wr2, wk])
     assert Helper.checkmate_info(True, B1) == (True, None, (0, 0))
 
     # it's not a check
@@ -229,8 +234,8 @@ def test_checkmate_info():
 
     # It's check and king moving can save it
     br2c = Rook(1, 5, False)
-    wr2c = Rook(2, 4, True)
-    B4 = (5, [wb1, wr1, wb2, bk, br2c, wr2c, wk])
+    wb2c = Bishop(2, 4, True)
+    B4 = (5, [wb1, wr1, wb2, bk, br2c, wb2c, wk])
     assert Helper.checkmate_info(True, B4) == (False, wk, (4, 4))
 
     # it's check and a piece moving can save it
@@ -256,6 +261,21 @@ def test_read_board1():
                 found = True
         assert found
 
+def test_possible_moves():
+    wb1 = Bishop(4, 2, True)
+    wr1 = Rook(2, 3, True)
+    wk = King(2, 1, True)
+    bb1 = Bishop(2, 4, False)
+    br1 = Rook(3, 5, False)
+    bk = King(2, 5, False)
+
+    B = (5, [wb1, wr1, wk, bb1, br1, bk])
+    assert wb1.possible_moves(B) == [(3, 1), (5, 3), (2, 4), (3, 3), (5, 1)]
+    assert wr1.possible_moves(B) == [(1, 3), (3, 3), (4, 3), (5, 3), (2, 2), (2, 4)]
+    assert wk.possible_moves(B) == [(2, 2), (1, 1), (1, 2)]
+    assert bb1.possible_moves(B) == [(1, 3), (1, 5), (3, 3), (4, 2)]
+    assert br1.possible_moves(B) == [(4, 5), (5, 5), (3, 1), (3, 2), (3, 3), (3, 4)]
+    assert bk.possible_moves(B) == [(1, 5), (1, 4), (3, 4)]
 
 def test_conf2unicode1():
     assert conf2unicode(B1) == "♖ ♔  \n ♜  ♜\n ♚ ♜ \n♖   ♗\n♗    "
