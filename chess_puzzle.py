@@ -371,25 +371,9 @@ class Helper:
                             checkmate_pieces_options.append(piece2)
 
         # the king can run away from check by itself?
-        king = king_in_check
-        all_King_moves_options = [[king.pos_x, king.pos_y + 1],
-                                  [king.pos_x, king.pos_y - 1],
-                                  [king.pos_x + 1, king.pos_y],
-                                  [king.pos_x - 1, king.pos_y],
-                                  [king.pos_x + 1, king.pos_y + 1],
-                                  [king.pos_x - 1, king.pos_y - 1],
-                                  [king.pos_x + 1, king.pos_y - 1],
-                                  [king.pos_x - 1, king.pos_y + 1]]
-        board_size = B[0]
-
-        for index in range(0, len(all_King_moves_options) - 1):
-            king_moves = all_King_moves_options[index][0], all_King_moves_options[index][1]
-            if king_moves[0] > board_size or king_moves[0] < 1 or king_moves[1] > board_size or king_moves[1] < 1:
-                continue
-            else:
-                can_run_away = king.can_move_to(king_moves[0], king_moves[1], B)
-                if can_run_away:
-                    return False, king, king_moves
+        king_moves = king_in_check.possible_moves(B)
+        if len(king_moves) > 0:
+            return False, king_in_check, random.choice(king_moves)
 
         for piece in board:
             if Helper.is_not_type(piece, King) and piece.side == side:
@@ -401,22 +385,18 @@ class Helper:
 
                     path_to_king = list()
                     opp_piece = checkmate_pieces_options[0]
-                    x = king.pos_x
-                    y = king.pos_y
+                    x = king_in_check.pos_x
+                    y = king_in_check.pos_y
                     x2 = checkmate_pieces_options[0].pos_x
                     y2 = checkmate_pieces_options[0].pos_y
 
                     # Firstly, check if it's possible to remove the piece that is threatening the king
-                    # if rook is not None and rook.can_reach(x2, y2, B):
-                    #     return False, rook, (x2, y2)
-                    # if bishop is not None and bishop.can_reach(x2, y2, B):
-                    #     return False, bishop, (x2, y2)
                     if piece.can_reach(x2, y2, B):
                         return False, piece, (x2, y2)
 
                     # Otherwise, find it is possible to move some piece to stop it from reaching the king
-
                     # Getting the enemy rook route (x, y) to king
+
                     if Helper.is_type(opp_piece, Rook):
                         if x2 == x:
                             while y2 != y:
@@ -464,9 +444,8 @@ class Helper:
                 pieces.append(Rook(piece.pos_x, piece.pos_y, piece.side))
         return B[0], pieces
 
-
-def type_of_piece(piece: Piece, option_rook: str, option_bishop: str, option_king: str):
-
+    @staticmethod
+    def type_of_piece(piece: Piece, option_rook: str, option_bishop: str, option_king: str):
         if type(piece) == Rook:
             return option_rook
         elif type(piece) == Bishop:
@@ -490,7 +469,6 @@ def is_check(side: bool, B: Board) -> bool:
                     if piece2.can_reach(king_in_check.pos_x, king_in_check.pos_y, B):
                         return True
                     if piece2.can_move_to(king_in_check.pos_x, king_in_check.pos_y, B):
-                        # print("It's check")
                         return True
     return False
 
@@ -597,7 +575,7 @@ def save_board(filename: str, B: Board) -> None:
         print("Sorry, the file couldn't be saved")
 
 
-def find_black_move(B: Board) -> tuple[Piece, int, int]:
+def find_black_move(B: Board) -> tuple[Optional[Piece], int, int]:
     '''
     returns (P, x, y) where a Black piece P can move on B to coordinates x,y according to chess rules 
     assumes there is at least one black piece that can move somewhere
@@ -607,7 +585,6 @@ def find_black_move(B: Board) -> tuple[Piece, int, int]:
     - use can_move_to
     '''
 
-    size = B[0]
     piece_list = B[1]
     black_elem_list = list()
     white_elem_list = list()
@@ -648,11 +625,14 @@ def find_black_move(B: Board) -> tuple[Piece, int, int]:
         else:
             # If no checkmate risk, or neither possible to reach any white piece, thus get a random x,y position and
             # check if any black can move to this position and keep check until to find one possible move.
+            random.shuffle(black_elem_list)
+            for piece in black_elem_list:
+                moves = piece.possible_moves(B)
+                if len(moves) > 0:
+                    move = random.choice(moves)
+                    return piece, move[0], move[1]
 
-            piece = random.choice(black_elem_list)
-            move = random.choice(piece.possible_moves(B))
-            return piece, move[0], move[1]
-
+            return None, 0, 0
 
 
 def conf2unicode(B: Board) -> str:
@@ -679,9 +659,9 @@ def conf2unicode(B: Board) -> str:
         type: str = None
 
         if side:
-            type = type_of_piece(piece, "♖", "♗", "♔")
+            type = Helper.type_of_piece(piece, "♖", "♗", "♔")
         else:
-            type = type_of_piece(piece, "♜", "♝", "♚")
+            type = Helper.type_of_piece(piece, "♜", "♝", "♚")
 
         if type is not None:
             new_list[pos_x][pos_y] = type
@@ -764,6 +744,10 @@ def execute(filename) -> bool:
                                 print("It's check for black")
 
                             black_move = find_black_move(temp_board)
+                            if black_move[0] is None:
+                                print("Draw. Black has no movements available.")
+                                return True
+
                             black_piece = black_move[0]
 
                             loc_initial_pos = index2location(black_piece.pos_x, black_piece.pos_y)
@@ -782,11 +766,11 @@ def execute(filename) -> bool:
                                 print("It's check for white")
                             continue
                     else:
-                        print("It's not possible to reach.")
+                        print("This is not a valid move.")
                         continue
 
                 else:
-                    print("Doesn't have any piece on this position")
+                    print("This is not a valid move. Doesn't have any piece on this position.")
                     continue
     except IOError:
         filename = input("This is not a valid file. File name for initial configuration: ")
@@ -805,9 +789,7 @@ def main() -> None:
     ...
     '''
 
-    filename = "board_examp2.txt"
-
-    # filename = input("File name for initial configuration: ")
+    filename = input("File name for initial configuration: ")
     execute(filename)
 
 

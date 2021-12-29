@@ -165,14 +165,14 @@ def test_type_of_piece():
 
     none_piece = Piece
 
-    assert type_of_piece(wr1, "♖", "♗", "♔") == "♖"
-    assert type_of_piece(wb1, "♖", "♗", "♔") == "♗"
-    assert type_of_piece(wk, "♖", "♗", "♔") == "♔"
-    assert type_of_piece(br1, "♜", "♝", "♚") == "♜"
-    assert type_of_piece(bb1_, "♜", "♝", "♚") == "♝"
-    assert type_of_piece(bk, "♜", "♝", "♚") == "♚"
+    assert Helper.type_of_piece(wr1, "♖", "♗", "♔") == "♖"
+    assert Helper.type_of_piece(wb1, "♖", "♗", "♔") == "♗"
+    assert Helper.type_of_piece(wk, "♖", "♗", "♔") == "♔"
+    assert Helper.type_of_piece(br1, "♜", "♝", "♚") == "♜"
+    assert Helper.type_of_piece(bb1_, "♜", "♝", "♚") == "♝"
+    assert Helper.type_of_piece(bk, "♜", "♝", "♚") == "♚"
     with pytest.raises(Exception):
-        type_of_piece(none_piece, "♜", "♝", "♚")
+        Helper.type_of_piece(none_piece, "♜", "♝", "♚")
 
 
 # ---------- chess_puzzle_functions -----------------------
@@ -244,6 +244,42 @@ def test_checkmate_info():
 
 
 def test_read_board1():
+    def create_board(data: str):
+        filename = "temp.txt"
+        f = open(filename, "w")
+        f.write(data)
+        f.close()
+        return read_board(filename)
+
+    def get_pieces(side: bool, B: Board) -> list[Piece]:
+        return [i for i in B[1] if i.side == side]
+
+    board_1 = create_board("10\n" +
+                           "Re4, Rf2, Bj3, Ka1\n" +
+                           "Kf7, Rg7")
+    assert board_1[0] == 10
+    assert get_pieces(True, board_1) == [Rook(5, 4, True), Rook(6, 2, True),
+                                         Bishop(10, 3, True), King(1, 1, True)]
+    assert get_pieces(False, board_1) == [King(6, 7, False), Rook(7, 7, False)]
+
+    board_2 = create_board("5\n" +
+                           "Ka1, Be4\n" +
+                           "Rc3, Ke1")
+    assert board_2[0] == 5
+    assert get_pieces(True, board_2) == [King(1, 1, True), Bishop(5, 4, True)]
+    assert get_pieces(False, board_2) == [Rook(3, 3, False), King(5, 1, False)]
+
+    with pytest.raises(Exception):
+        create_board("invalid\n" +
+                     "Ka1, Be4\n" +
+                     "Rc3, Ke1")
+
+    with pytest.raises(Exception):
+        create_board("5\n" +
+                     "K, Be4\n" +
+                     "Rc3, Ke1")
+
+    # test provided
     B = read_board("board_examp.txt")
     assert B[0] == 5
 
@@ -260,6 +296,7 @@ def test_read_board1():
             if piece.pos_x == piece1.pos_x and piece.pos_y == piece1.pos_y and piece.side == piece1.side and type(piece) == type(piece1):
                 found = True
         assert found
+
 
 def test_possible_moves():
     wb1 = Bishop(4, 2, True)
